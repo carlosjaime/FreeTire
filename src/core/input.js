@@ -50,6 +50,10 @@ export class Input {
 
     this.gamepadIndex = null;
     this.stick = { moveX: 0, moveY: 0, lookX: 0, lookY: 0 };
+    /** Touch joystick, fed by components/TouchControls.jsx on mobile. Additive
+     *  with the gamepad stick and the keyboard axes in moveVector(), so no
+     *  other subsystem needs to know a touchscreen is involved. */
+    this.touchMove = { x: 0, y: 0 };
 
     this._bound = {
       keydown: this._onKeyDown.bind(this),
@@ -130,6 +134,34 @@ export class Input {
     // movementX/Y is already relative and unaffected by cursor clamping.
     this._rawLook.x += e.movementX ?? 0;
     this._rawLook.y += e.movementY ?? 0;
+  }
+
+  /* -------------------------------------------------------------- touch -- */
+  /** Relative look delta from a touch drag, in the same units `movementX/Y`
+   *  would produce — everything downstream (sensitivity, invert-Y, ADS scale)
+   *  is shared with the mouse path. */
+  touchLook(dx, dy) {
+    if (!this.enabled || this.frozen) return;
+    this._rawLook.x += dx;
+    this._rawLook.y += dy;
+  }
+
+  /** Virtual joystick, already in the -1..1 unit disc. */
+  setTouchMove(x, y) {
+    this.touchMove.x = x;
+    this.touchMove.y = y;
+  }
+
+  /** Press/release a virtual key code — reuses the exact same edge-detected
+   *  path a real key or mouse button goes through, so every ACTIONS binding
+   *  (and `.fire`/`.ads`) works for a touch button with no special-casing. */
+  touchDown(code) {
+    if (!this.enabled) return;
+    this._pendingDown.add(code);
+  }
+
+  touchUp(code) {
+    this._pendingUp.add(code);
   }
 
   _onWheel(e) {
@@ -239,8 +271,9 @@ export class Input {
   moveVector(out = { x: 0, y: 0 }) {
     let x = (this.action('right') ? 1 : 0) - (this.action('left') ? 1 : 0);
     let y = (this.action('forward') ? 1 : 0) - (this.action('back') ? 1 : 0);
-    x += this.stick.moveX;
+    x += this.stick.moveX + this.touchMove.x;
     y -= this.stick.moveY;
+    y += this.touchMove.y;
     const len = Math.hypot(x, y);
     if (len > 1) {
       x /= len;

@@ -1,21 +1,53 @@
-# Claude of Duty
+# FreeTire
 
 Get updates [here](https://shumer.dev/newsletter).
 
-A first-person shooter built in the browser with Three.js r180 and WebGL2. Roughly
-55k lines across 11 subsystems, written by a fleet of AI agents under orchestration.
+A first-person shooter built in the browser with Three.js r180 and WebGL2, shipped
+as a Next.js 16 app with real-time WebSocket deathmatch multiplayer. Roughly 55k
+lines across 11 engine subsystems, written by a fleet of AI agents under
+orchestration.
 
 **There are no art assets.** Every texture, mesh, animation and sound is generated
 procedurally at load time from code. No models, no HDRIs, no image files, no audio
-files. The only runtime dependency is `three`.
+files. The only runtime engine dependency is `three`.
+
+## Quick start
 
 ```bash
 npm install
-npm run dev          # http://127.0.0.1:5173
+npm run dev          # http://127.0.0.1:3000
 ```
 
-Click the canvas to lock the cursor. WASD move, mouse aim, LMB fire, RMB ADS,
-R reload, Shift sprint, Ctrl crouch, Space jump, Q/E lean, Esc release.
+Deploy from the in-app lobby. Click the canvas to lock the cursor on desktop.
+WASD move, mouse aim, LMB fire, RMB ADS, R reload, Shift sprint, Ctrl crouch,
+Space jump, Q/E lean, Esc pause. On touch devices a virtual joystick + look zone
++ on-screen buttons replace mouse/keyboard automatically — see `components/`.
+
+## Multiplayer
+
+Deathmatch runs over [PartyKit](https://www.partykit.io/) (`party/main.js`).
+The room is a thin relay — hit registration is shooter-authoritative (see
+`src/multiplayer/index.js` for the full write-up) so no server-side physics is
+needed. Remote players are rendered with the exact same rig, materials and
+per-bone hitboxes as the AI soldiers in `src/ai/`, just driven by network
+snapshots instead of the AI brain.
+
+```bash
+npm run party:dev        # local dev server, wired up automatically in `npm run dev`
+npx partykit deploy      # ships party/main.js, prints your *.partykit.dev host
+```
+
+Put that host in `NEXT_PUBLIC_PARTYKIT_HOST` (see `.env.example`) — locally in
+`.env.local`, and in your Vercel project's environment variables. Leave it
+unset to run solo-only; the lobby disables the multiplayer option and tells you
+why.
+
+## Deploying
+
+The Next.js app deploys to [Vercel](https://vercel.com) with zero extra config
+— import the repo, set `NEXT_PUBLIC_PARTYKIT_HOST`, deploy. The PartyKit room
+deploys separately (`npx partykit deploy`) since Vercel's serverless functions
+can't hold the long-lived WebSocket connections a deathmatch needs.
 
 ## What's in it
 
@@ -32,6 +64,7 @@ R reload, Shift sprint, Ctrl crouch, Space jump, Q/E lean, Esc release.
 | `ai` | Skinned soldiers, navmesh pathing, perception, cover behaviour, ragdoll death |
 | `ui` | DOM/CSS HUD: crosshair, hitmarkers, minimap, compass, killfeed |
 | `audio` | Web Audio synthesis — no sound files. Layered weapon fire, convolution reverb, HRTF spatialisation, occlusion |
+| `multiplayer` | PartyKit client: connects, syncs remote player state, relays shooter-authoritative hits/kills/respawns, drives AI-rig "puppets" for other humans |
 
 `ARCHITECTURE.md` is the contract the agents worked against: subsystem interface,
 directory ownership, the cross-subsystem event vocabulary, and shared surface types.

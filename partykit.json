@@ -1,0 +1,6 @@
+{
+  "$schema": "https://www.partykit.io/schema.json",
+  "name": "freetire",
+  "main": "party/main.js",
+  "compatibilityDate": "2024-01-01"
+}

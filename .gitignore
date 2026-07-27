@@ -1,5 +1,17 @@
 node_modules/
 
+# Next.js / Vercel
+.next/
+out/
+.vercel/
+next-env.d.ts
+
+# PartyKit
+.partykit/
+
+.env
+.env*.local
+
 # Build output
 dist/
 playable-snapshot/

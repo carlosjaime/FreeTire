@@ -1,4 +1,4 @@
-# OVERWATCH — engine contract
+# FreeTire — engine contract
 
 **Every agent must read this before writing code. It is the only coordination mechanism.**
 

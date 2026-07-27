@@ -161,7 +161,8 @@ export class AiSystem {
   _bootNav(ctx) {
     try {
       this._buildNav();
-      if (!this._navPending && (!ctx.config.deterministic || this.forcePopulate)) this.populate();
+      if (!this._navPending && (!ctx.config.deterministic || this.forcePopulate) && !ctx.config.multiplayer)
+        this.populate();
     } catch (err) {
       this._navPending = true;
       console.warn('[ai] boot nav deferred to the first frame:', err?.message ?? err);
@@ -537,6 +538,17 @@ export class AiSystem {
     return made;
   }
 
+  /** Remove and fully dispose an agent that isn't dying on-screen (e.g. a
+   *  network player's puppet whose owner disconnected or respawned). Deaths
+   *  from combat stay in `agents` forever, same as today, so their ragdoll
+   *  keeps settling and their body keeps casting a shadow. */
+  despawn(agent) {
+    const i = this.agents.indexOf(agent);
+    if (i < 0) return;
+    agent.dispose();
+    this.agents.splice(i, 1);
+  }
+
   createSquad() {
     const s = new Squad(this.rng.fork());
     this.squads.push(s);
@@ -725,8 +737,9 @@ export class AiSystem {
       this._buildNav();
       // Populate the level for normal play. Capture runs stay empty unless a
       // shot asks for a tableau, so nobody's screenshot gets a stray patrol
-      // wandering through it.
-      if (!this._navPending && (!ctx.config.deterministic || this.forcePopulate)) this.populate();
+      // wandering through it. Multiplayer matches are PvP-only: no garrison.
+      if (!this._navPending && (!ctx.config.deterministic || this.forcePopulate) && !ctx.config.multiplayer)
+        this.populate();
     }
 
     // Per-frame A* budget: see requestPath().
@@ -739,7 +752,13 @@ export class AiSystem {
     for (let i = 0; i < this.agents.length; i++) {
       const a = this.agents[i];
       if (a.alive) {
-        if (a.staged) this._updateStaged(a, dt);
+        // `remote` agents are network-driven puppets for other human players
+        // (see src/multiplayer/): MultiplayerSystem writes their position/pose
+        // and calls `agent._drive()` itself, so the AI brain must stay out —
+        // running the sense/pathing/combat loop on top would fight the network
+        // snapshot every frame.
+        if (a.remote) { /* driven externally */ }
+        else if (a.staged) this._updateStaged(a, dt);
         else a.update(dt, ctx);
         alive++;
       } else if (a.deadTime !== undefined) {
