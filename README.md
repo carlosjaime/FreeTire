@@ -207,4 +207,9 @@ diffuse and made it worse. The fix was the opposite of what was asked for.
 
 <div align="center">
 <sub>Screenshots are the named shots in <code>src/dev/shots.js</code>, captured headless at 1920×1080 on the <code>ultra</code> preset.</sub>
+
+---
+
+**RCMx 2026 - Todos los derechos reservados**
+
 </div>
