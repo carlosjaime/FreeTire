@@ -661,7 +661,9 @@ const CSS = `
   position:absolute; inset:0; width:100%; height:100%; margin:0;
   appearance:none; background:transparent; cursor:pointer; opacity:0;
 }
-.ow-btns { margin-top: calc(var(--u) * 5); display:flex; gap: calc(var(--u) * 2.5); }
+/* wraps: the row carries three buttons at 1080p and must not push past the
+   430px column when the labels are long */
+.ow-btns { margin-top: calc(var(--u) * 5); display:flex; flex-wrap:wrap; gap: calc(var(--u) * 2.5); }
 .ow-btn {
   appearance:none; border:1px solid var(--hair); background: rgba(255,255,255,.04);
   color: var(--ink); font-family: var(--ff); font-weight:600; text-transform:uppercase;
@@ -675,6 +677,21 @@ const CSS = `
 .ow-menu .hint {
   margin-top: calc(var(--u) * 4); font-size: calc(9.5px * var(--k));
   letter-spacing:.2em; color: var(--ink-3);
+}
+
+/* ================================================================= about
+   Second page of the menu column: same rail, same amber border, so it reads as
+   the panel turning a page rather than a dialog opening over it. */
+.ow-about { opacity:0; pointer-events:none; will-change: opacity, transform; }
+.ow-about .ow-row:last-of-type { border-bottom:0; }
+.ow-about-copy {
+  margin-top: calc(var(--u) * 5);
+  padding-left: calc(var(--u) * 2.5);
+  border-left: calc(2px * var(--k)) solid var(--hair);
+  /* mixed-case brand line — must survive the HUD's global uppercasing */
+  text-transform: none;
+  font-size: calc(11.5px * var(--k)); letter-spacing:.08em;
+  color: var(--ink-2); text-shadow: var(--sh-hard);
 }
 
 /* ============================================================== fadeouts */

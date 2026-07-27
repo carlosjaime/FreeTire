@@ -1,4 +1,5 @@
 import { el, setText, setStyle, clamp, damp, ease } from './util.js';
+import { AboutPanel } from './about.js';
 
 const PRESETS = ['low', 'medium', 'high', 'ultra'];
 
@@ -18,6 +19,7 @@ export class PauseMenu {
     this.ctx = ctx;
     this.root = el('div', 'ow-menu', parent);
     const inner = el('div', 'ow-menu-inner', this.root);
+    this.pane = inner;
 
     const h = el('h1', null, inner, 'Paused');
     h.textContent = 'PAUSED';
@@ -87,7 +89,14 @@ export class PauseMenu {
       this.ctx.config.invertY = false;
       this.setQuality('ultra');
     });
+    const about = el('button', 'ow-btn', btns, 'Acerca de');
+    about.type = 'button';
+    about.addEventListener('click', () => this.showAbout());
     el('div', 'hint', inner, 'ESC RESUME · WASD MOVE · SHIFT SPRINT · R RELOAD · F USE');
+
+    // ---- about page ------------------------------------------------------
+    this.about = new AboutPanel(this.root);
+    this.about.onBack(() => this.hideAbout());
 
     this.open = false;
     this.shown = 0;
@@ -151,7 +160,20 @@ export class PauseMenu {
     this.fov?.set(cfg.fov ?? 80);
   }
 
+  showAbout() {
+    this.about.show();
+  }
+
+  hideAbout() {
+    this.about.hide();
+  }
+
+  /** ESC steps back one page before it closes the menu. */
   toggle() {
+    if (this.open && this.about.open) {
+      this.hideAbout();
+      return;
+    }
     this.open ? this.close() : this.show();
   }
 
@@ -173,6 +195,7 @@ export class PauseMenu {
   close() {
     if (!this.open) return;
     this.open = false;
+    this.hideAbout(); // always reopen on the settings page
     const t = this.ctx.time;
     if (t) t.scale = this._prevScale ?? 1;
     this.ctx.peek('player')?.setControlEnabled?.(true);
@@ -182,6 +205,14 @@ export class PauseMenu {
 
   /** Driven with unscaled time so the fade still runs while the game is frozen. */
   update(rawDt) {
+    this.about.update(rawDt);
+    // The two pages cross-fade on the same rail: settings dim out as the about
+    // card comes in, and drop out of the layout once it fully covers them.
+    const a = ease.outQuad(this.about.shown);
+    setStyle(this.pane, 'opacity', (1 - a).toFixed(3));
+    setStyle(this.pane, 'pointer-events', this.about.shown > 0.004 ? 'none' : 'auto');
+    setStyle(this.pane, 'display', a > 0.996 ? 'none' : '');
+
     this.shown = damp(this.shown, this.open ? 1 : 0, 14, rawDt);
     if (this.shown < 0.004) {
       setStyle(this.root, 'display', 'none');
@@ -194,6 +225,7 @@ export class PauseMenu {
   }
 
   dispose() {
+    this.about.dispose();
     this.root.remove();
   }
 }

@@ -42,7 +42,7 @@ const MAX_BLIPS = 48;
  *   ui.setMatch({scoreUs,scoreThem,timeLeft,mode})
  *   ui.setHudVisible(bool)              hide everything (cinematics)
  *   ui.pause() / ui.resume() / ui.menu.toggle()
- *   ui.debugState('combat'|'menu'|'clean')
+ *   ui.debugState('combat'|'menu'|'about'|'clean')
  *
  * ---------------------------------------------------------------------------
  * WHAT THIS SUBSYSTEM READS FROM OTHERS (all optional, all duck-typed)
@@ -390,6 +390,11 @@ export class UiSystem {
       this.debugState('combat');
       this.menu.show();
       return { state: 'menu' };
+    }
+    if (name === 'about') {
+      this.debugState('menu');
+      this.menu.showAbout();
+      return { state: 'about' };
     }
     if (!this.demo) this.demo = new CombatDemo();
     this.demo.start(this);

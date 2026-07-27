@@ -6,7 +6,8 @@
  *   node src/ui/preview.mjs --port=5212 --fonts
  *
  * `--state` is handed to `ui.debugState()`, so this can screenshot HUD states
- * the shared shot list does not cover (the pause menu, a clean HUD, ...).
+ * the shared shot list does not cover (the pause menu, the about page, a clean
+ * HUD, ...).
  * `--fonts` reports which condensed families the browser can actually resolve —
  * the HUD's whole typographic character depends on that answer.
  */
