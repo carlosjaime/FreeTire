@@ -1,21 +1,92 @@
-# Claude of Duty
+<div align="center">
 
-Get updates [here](https://shumer.dev/newsletter).
+# CLAUDE OF DUTY
 
-A first-person shooter built in the browser with Three.js r180 and WebGL2. Roughly
-55k lines across 11 subsystems, written by a fleet of AI agents under orchestration.
+### A first-person shooter with **zero art assets**
 
-**There are no art assets.** Every texture, mesh, animation and sound is generated
-procedurally at load time from code. No models, no HDRIs, no image files, no audio
-files. The only runtime dependency is `three`.
+Every texture, mesh, animation and sound is generated procedurally, in the browser,
+at load time. No models. No HDRIs. No image files. No audio files.
+The only runtime dependency is `three`.
+
+![three.js](https://img.shields.io/badge/three.js-r180-000000?style=for-the-badge&logo=three.js&logoColor=white)
+![WebGL](https://img.shields.io/badge/WebGL-2.0-990000?style=for-the-badge&logo=webgl&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-7-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+![art assets](https://img.shields.io/badge/art_assets-0-1DB954?style=for-the-badge)
+![lines](https://img.shields.io/badge/~55k_lines-11_subsystems-1DB954?style=for-the-badge)
+
+<img src="docs/media/hero.jpg" alt="Wide establishing shot down the main street" width="100%">
+
+<sub>Get updates <a href="https://shumer.dev/newsletter">here</a>.</sub>
+
+</div>
+
+---
+
+## Play it
 
 ```bash
 npm install
 npm run dev          # http://127.0.0.1:5173
 ```
 
-Click the canvas to lock the cursor. WASD move, mouse aim, LMB fire, RMB ADS,
-R reload, Shift sprint, Ctrl crouch, Space jump, Q/E lean, Esc release.
+Click the canvas to lock the cursor.
+
+| | | | |
+|---|---|---|---|
+| **WASD** move | **Mouse** aim | **LMB** fire | **RMB** ADS |
+| **R** reload | **Shift** sprint | **Ctrl** crouch | **Space** jump |
+| **Q/E** lean | **F** use | **Esc** pause / release | |
+
+---
+
+## Screenshots
+
+Every pixel below is generated from code — there is not a single image file in the repository.
+
+<table>
+<tr>
+<td width="50%"><img src="docs/media/sunset.jpg" alt="Low sun over the market street" width="100%"></td>
+<td width="50%"><img src="docs/media/night.jpg" alt="The same street at night" width="100%"></td>
+</tr>
+<tr>
+<td><b>Low sun</b><br><sub>Atmospheric scattering, long shadows, god rays, bloom.</sub></td>
+<td><b>Night</b><br><sub>Artificial lights, exposure adaptation, shadows in the dark.</sub></td>
+</tr>
+<tr>
+<td><img src="docs/media/interior.jpg" alt="Interior lit by window shafts" width="100%"></td>
+<td><img src="docs/media/detail.jpg" alt="Close-up of procedural wall materials" width="100%"></td>
+</tr>
+<tr>
+<td><b>Interiors</b><br><sub>Light shafts through windows — bounce, AO, volumetrics.</sub></td>
+<td><b>Materials</b><br><sub>19 procedural surfaces, parallax occlusion, edge wear.</sub></td>
+</tr>
+<tr>
+<td><img src="docs/media/ads.jpg" alt="Aiming down sights" width="100%"></td>
+<td><img src="docs/media/impacts.jpg" alt="Bullet impacts on a plaster wall" width="100%"></td>
+</tr>
+<tr>
+<td><b>Iron sights</b><br><sub>Procedural weapon geometry, optic alignment, viewmodel rig.</sub></td>
+<td><b>Impacts</b><br><sub>Decals, debris, dust puffs, sparks — all GPU particles.</sub></td>
+</tr>
+<tr>
+<td><img src="docs/media/combat.jpg" alt="Enemies mid-firefight" width="100%"></td>
+<td><img src="docs/media/hud.jpg" alt="Full combat HUD" width="100%"></td>
+</tr>
+<tr>
+<td><b>Firefight</b><br><sub>Skinned soldiers, navmesh pathing, cover behaviour, ragdolls.</sub></td>
+<td><b>HUD</b><br><sub>Pure DOM/CSS overlay, integrated from <code>dt</code>, frame-deterministic.</sub></td>
+</tr>
+<tr>
+<td><img src="docs/media/menu.jpg" alt="Pause menu" width="100%"></td>
+<td><img src="docs/media/about.jpg" alt="About page" width="100%"></td>
+</tr>
+<tr>
+<td><b>Pause menu</b><br><sub>Live quality, sensitivity and FOV, wired straight into the config.</sub></td>
+<td><b>About</b><br><sub>Second page of the same column — credits and version.</sub></td>
+</tr>
+</table>
+
+---
 
 ## What's in it
 
@@ -30,11 +101,15 @@ R reload, Shift sprint, Ctrl crouch, Space jump, Q/E lean, Esc release.
 | `weapons` | Procedural weapon geometry, viewmodel rig, ADS, spring recoil, procedural reloads, ballistics with travel time and drop |
 | `fx` | GPU particles, decals, tracers, muzzle flash, explosions |
 | `ai` | Skinned soldiers, navmesh pathing, perception, cover behaviour, ragdoll death |
-| `ui` | DOM/CSS HUD: crosshair, hitmarkers, minimap, compass, killfeed |
+| `ui` | DOM/CSS HUD: crosshair, hitmarkers, minimap, compass, killfeed, pause menu |
 | `audio` | Web Audio synthesis — no sound files. Layered weapon fire, convolution reverb, HRTF spatialisation, occlusion |
 
-`ARCHITECTURE.md` is the contract the agents worked against: subsystem interface,
-directory ownership, the cross-subsystem event vocabulary, and shared surface types.
+Roughly 55k lines across 11 subsystems, written by a fleet of AI agents under
+orchestration. `ARCHITECTURE.md` is the contract they worked against: subsystem
+interface, directory ownership, the cross-subsystem event vocabulary, and shared
+surface types.
+
+---
 
 ## Tooling
 
@@ -51,16 +126,18 @@ The interesting part of this repo is arguably the harness, not the game.
 
 Two findings worth recording, because both invalidated earlier measurements:
 
-**Median frame time hides the actual problem.** A static-camera benchmark reported
-94 fps while the game was unplayable. Real gameplay at Retina DPR (internal 3.34 MP,
-not 2.07) ran 12–17 fps with **728–1236 ms stalls** caused by 34+ WebGL programs
-compiling lazily mid-frame. `profile.mjs` reports p50/p95/p99 and attributes each
-hitch, which is what surfaced it.
+> **Median frame time hides the actual problem.** A static-camera benchmark reported
+> 94 fps while the game was unplayable. Real gameplay at Retina DPR (internal 3.34 MP,
+> not 2.07) ran 12–17 fps with **728–1236 ms stalls** caused by 34+ WebGL programs
+> compiling lazily mid-frame. `profile.mjs` reports p50/p95/p99 and attributes each
+> hitch, which is what surfaced it.
 
-**Captures were not reproducible.** `shotset.mjs` reuses one page across all 11
-shots, so particle age, decal buffers and exposure state leak forward — two identical
-runs differed on 10 of 11 shots. `baseline.mjs` isolates each shot in a fresh page,
-which is bit-identical and is what makes `imagediff.mjs` a usable gate.
+> **Captures were not reproducible.** `shotset.mjs` reuses one page across all 11
+> shots, so particle age, decal buffers and exposure state leak forward — two identical
+> runs differed on 10 of 11 shots. `baseline.mjs` isolates each shot in a fresh page,
+> which is bit-identical and is what makes `imagediff.mjs` a usable gate.
+
+---
 
 ## Performance
 
@@ -83,6 +160,8 @@ Shader pre-warm (`src/core/prewarm.js`) is what removed the stalls. Making it
 *provably* pixel-neutral required first fixing subsystems that animated off
 `performance.now()` instead of the engine clock, since any change to boot duration
 otherwise shifted output.
+
+---
 
 ## Honest assessment
 
@@ -109,6 +188,8 @@ delivers roughly 20× the irradiance per unit albedo that the world does — a p
 purely from F0=0.04. Every weapon albedo is cheated to a third of physical to
 compensate, which caps material separation on the most-looked-at object in the game.
 
+---
+
 ## Process note
 
 Sequential single-owner passes beat parallel fan-out decisively. Three rounds of six
@@ -123,3 +204,7 @@ critic for three rounds reported the weapon as "untextured". It wasn't — it wa
 specular-dominated, with the diffuse term measured at L=26 against a shipped L=67.
 Prior rounds had been crushing albedos to fight bright-part complaints, which killed
 diffuse and made it worse. The fix was the opposite of what was asked for.
+
+<div align="center">
+<sub>Screenshots are the named shots in <code>src/dev/shots.js</code>, captured headless at 1920×1080 on the <code>ultra</code> preset.</sub>
+</div>
